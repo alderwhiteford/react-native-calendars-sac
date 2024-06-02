@@ -1,24 +1,12 @@
 import PropTypes from 'prop-types';
-
 import get from 'lodash/get';
 import map from 'lodash/map';
 import isFunction from 'lodash/isFunction';
 import isUndefined from 'lodash/isUndefined';
 import debounce from 'lodash/debounce';
-
 import XDate from 'xdate';
-
 import React, {useCallback, useContext, useEffect, useMemo, useRef} from 'react';
-import {
-  SectionList,
-  DefaultSectionT,
-  SectionListData,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-  LayoutChangeEvent,
-  ViewToken,
-} from 'react-native';
-
+import {SectionList} from 'react-native';
 import {useDidUpdate} from '../hooks';
 import {getMoment} from '../momentResolver';
 import {isToday, isGTE, sameDate} from '../dateutils';
@@ -29,23 +17,20 @@ import constants from '../commons/constants';
 import styleConstructor from './style';
 import Context from './Context';
 import InfiniteAgendaList from './infiniteAgendaList';
-import {AgendaListProps, AgendaSectionHeader} from './AgendaListsCommon';
-
+import {AgendaSectionHeader} from './AgendaListsCommon';
 const viewabilityConfig = {
   itemVisiblePercentThreshold: 20 // 50 means if 50% of the item is visible
 };
-
 /**
  * @description: AgendaList component
  * @note: Should be wrapped with 'CalendarProvider'
  * @extends: SectionList
  * @example: https://github.com/wix/react-native-calendars/blob/master/example/src/screens/expandableCalendar.js
  */
-const AgendaList = (props: AgendaListProps) => {
+const AgendaList = props => {
   if (props.infiniteListProps) {
     return <InfiniteAgendaList {...props} />;
   }
-
   const {
     theme,
     sections,
@@ -64,18 +49,15 @@ const AgendaList = (props: AgendaListProps) => {
     useMoment,
     markToday = true,
     onViewableItemsChanged,
-    scrollDelay = 200,
+    scrollDelay = 200
   } = props;
-
   const {date, updateSource, setDate, setDisabled} = useContext(Context);
-
   const style = useRef(styleConstructor(theme));
-  const list = useRef<any>();
+  const list = useRef();
   const _topSection = useRef(sections[0]?.title);
   const didScroll = useRef(false);
   const sectionScroll = useRef(false);
   const sectionHeight = useRef(0);
-
   useEffect(() => {
     if (date !== _topSection.current) {
       setTimeout(() => {
@@ -83,15 +65,13 @@ const AgendaList = (props: AgendaListProps) => {
       }, 500);
     }
   }, []);
-
   useDidUpdate(() => {
     // NOTE: on first init data should set first section to the current date!!!
     if (updateSource !== UpdateSources.LIST_DRAG && updateSource !== UpdateSources.CALENDAR_INIT) {
       scrollToSection(date);
     }
   }, [date]);
-
-  const getSectionIndex = (date: string) => {
+  const getSectionIndex = date => {
     let i;
     map(sections, (section, index) => {
       // NOTE: sections titles should match current date format!!!
@@ -101,8 +81,7 @@ const AgendaList = (props: AgendaListProps) => {
     });
     return i;
   };
-
-  const getNextSectionIndex = (date: string) => {
+  const getNextSectionIndex = date => {
     let i = 0;
     for (let j = 1; j < sections.length; j++) {
       const prev = parseDate(sections[j - 1]?.title);
@@ -117,12 +96,9 @@ const AgendaList = (props: AgendaListProps) => {
     }
     return i;
   };
-
-  const getSectionTitle = useCallback((title: string) => {
+  const getSectionTitle = useCallback(title => {
     if (!title) return;
-
     let sectionTitle = title;
-
     if (dayFormatter) {
       sectionTitle = dayFormatter(title);
     } else if (dayFormat) {
@@ -133,98 +109,110 @@ const AgendaList = (props: AgendaListProps) => {
         sectionTitle = new XDate(title).toString(dayFormat);
       }
     }
-
     if (markToday) {
       const string = getDefaultLocale().today || todayString;
       const today = isToday(title);
       sectionTitle = today ? `${string}, ${sectionTitle}` : sectionTitle;
     }
-
     return sectionTitle;
   }, []);
-
-  const scrollToSection = useCallback(debounce((d) => {
-    const sectionIndex = scrollToNextEvent ? getNextSectionIndex(d) : getSectionIndex(d);
-    if (isUndefined(sectionIndex)) {
-      return;
-    }
-    if (list?.current && sectionIndex !== undefined) {
-      sectionScroll.current = true; // to avoid setDate() in onViewableItemsChanged
-      _topSection.current = sections[sectionIndex]?.title;
-
-      list?.current.scrollToLocation({
-        animated: true,
-        sectionIndex: sectionIndex,
-        itemIndex: 1,
-        viewPosition: 0, // position at the top
-        viewOffset: (constants.isAndroid ? sectionHeight.current : 0) + viewOffset
-      });
-    }
-  }, scrollDelay, {leading: false, trailing: true}), [viewOffset, sections]);
-
-  const _onViewableItemsChanged = useCallback((info: {viewableItems: Array<ViewToken>; changed: Array<ViewToken>}) => {
-    if (info?.viewableItems && !sectionScroll.current) {
-      const topSection = get(info?.viewableItems[0], 'section.title');
-      if (topSection && topSection !== _topSection.current) {
-        _topSection.current = topSection;
-        if (didScroll.current && !avoidDateUpdates) {
-          // to avoid setDate() on first load (while setting the initial context.date value)
-          setDate?.(_topSection.current, UpdateSources.LIST_DRAG);
+  const scrollToSection = useCallback(
+    debounce(
+      d => {
+        const sectionIndex = scrollToNextEvent ? getNextSectionIndex(d) : getSectionIndex(d);
+        if (isUndefined(sectionIndex)) {
+          return;
+        }
+        if (list?.current && sectionIndex !== undefined) {
+          sectionScroll.current = true; // to avoid setDate() in onViewableItemsChanged
+          _topSection.current = sections[sectionIndex]?.title;
+          list?.current.scrollToLocation({
+            animated: true,
+            sectionIndex: sectionIndex,
+            itemIndex: 1,
+            viewPosition: 0,
+            viewOffset: (constants.isAndroid ? sectionHeight.current : 0) + viewOffset
+          });
+        }
+      },
+      scrollDelay,
+      {leading: false, trailing: true}
+    ),
+    [viewOffset, sections]
+  );
+  const _onViewableItemsChanged = useCallback(
+    info => {
+      if (info?.viewableItems && !sectionScroll.current) {
+        const topSection = get(info?.viewableItems[0], 'section.title');
+        if (topSection && topSection !== _topSection.current) {
+          _topSection.current = topSection;
+          if (didScroll.current && !avoidDateUpdates) {
+            // to avoid setDate() on first load (while setting the initial context.date value)
+            setDate?.(_topSection.current, UpdateSources.LIST_DRAG);
+          }
         }
       }
-    }
-    onViewableItemsChanged?.(info);
-  }, [avoidDateUpdates, setDate, onViewableItemsChanged]);
-
-  const _onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (!didScroll.current) {
-      didScroll.current = true;
-      scrollToSection.cancel();
-    }
-    onScroll?.(event);
-  }, [onScroll]);
-
-  const _onMomentumScrollBegin = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    setDisabled?.(true);
-    onMomentumScrollBegin?.(event);
-  }, [onMomentumScrollBegin, setDisabled]);
-
-  const _onMomentumScrollEnd = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // when list momentum ends AND when scrollToSection scroll ends
-    sectionScroll.current = false;
-    setDisabled?.(false);
-    onMomentumScrollEnd?.(event);
-  }, [onMomentumScrollEnd, setDisabled]);
-
+      onViewableItemsChanged?.(info);
+    },
+    [avoidDateUpdates, setDate, onViewableItemsChanged]
+  );
+  const _onScroll = useCallback(
+    event => {
+      if (!didScroll.current) {
+        didScroll.current = true;
+        scrollToSection.cancel();
+      }
+      onScroll?.(event);
+    },
+    [onScroll]
+  );
+  const _onMomentumScrollBegin = useCallback(
+    event => {
+      setDisabled?.(true);
+      onMomentumScrollBegin?.(event);
+    },
+    [onMomentumScrollBegin, setDisabled]
+  );
+  const _onMomentumScrollEnd = useCallback(
+    event => {
+      // when list momentum ends AND when scrollToSection scroll ends
+      sectionScroll.current = false;
+      setDisabled?.(false);
+      onMomentumScrollEnd?.(event);
+    },
+    [onMomentumScrollEnd, setDisabled]
+  );
   const headerTextStyle = useMemo(() => [style.current.sectionText, sectionStyle], [sectionStyle]);
-
-  const _onScrollToIndexFailed = useCallback((info: {index: number; highestMeasuredFrameIndex: number; averageItemLength: number}) => {
-    if (onScrollToIndexFailed) {
-      onScrollToIndexFailed(info);
-    } else {
-      console.log('onScrollToIndexFailed info: ', info);
-    }
-  }, [onScrollToIndexFailed]);
-
-  const onHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+  const _onScrollToIndexFailed = useCallback(
+    info => {
+      if (onScrollToIndexFailed) {
+        onScrollToIndexFailed(info);
+      } else {
+        console.log('onScrollToIndexFailed info: ', info);
+      }
+    },
+    [onScrollToIndexFailed]
+  );
+  const onHeaderLayout = useCallback(event => {
     sectionHeight.current = event.nativeEvent.layout.height;
   }, []);
-
-  const _renderSectionHeader = useCallback((info: {section: SectionListData<any, DefaultSectionT>}) => {
-    const title = info?.section?.title;
-
-    if (renderSectionHeader) {
-      return renderSectionHeader(title);
-    }
-
-    const headerTitle = getSectionTitle(title);
-    return <AgendaSectionHeader title={headerTitle} style={headerTextStyle} onLayout={onHeaderLayout}/>;
-  }, [headerTextStyle]);
-
-  const _keyExtractor = useCallback((item: any, index: number) => {
-    return isFunction(keyExtractor) ? keyExtractor(item, index) : String(index);
-  }, [keyExtractor]);
-
+  const _renderSectionHeader = useCallback(
+    info => {
+      const title = info?.section?.title;
+      if (renderSectionHeader) {
+        return renderSectionHeader(title);
+      }
+      const headerTitle = getSectionTitle(title);
+      return <AgendaSectionHeader title={headerTitle} style={headerTextStyle} onLayout={onHeaderLayout} />;
+    },
+    [headerTextStyle]
+  );
+  const _keyExtractor = useCallback(
+    (item, index) => {
+      return isFunction(keyExtractor) ? keyExtractor(item, index) : String(index);
+    },
+    [keyExtractor]
+  );
   return (
     <SectionList
       stickySectionHeadersEnabled
@@ -239,17 +227,13 @@ const AgendaList = (props: AgendaListProps) => {
       onMomentumScrollBegin={_onMomentumScrollBegin}
       onMomentumScrollEnd={_onMomentumScrollEnd}
       onScrollToIndexFailed={_onScrollToIndexFailed}
-      // getItemLayout={_getItemLayout} // onViewableItemsChanged is not updated when list scrolls!!!
     />
   );
-
   // _getItemLayout = (data, index) => {
   //   return {length: constants.screenWidth, offset: constants.screenWidth * index, index};
   // }
 };
-
 export default AgendaList;
-
 AgendaList.displayName = 'AgendaList';
 AgendaList.propTypes = {
   dayFormat: PropTypes.string,
