@@ -25,7 +25,8 @@ const Week = React.memo(props => {
     style: propsStyle,
     numberOfDays = 1,
     timelineLeftInset,
-    testID
+    testID,
+    context
   } = props;
   const style = useRef(styleConstructor(theme));
   const disableDaySelection = useMemo(() => {
@@ -58,7 +59,7 @@ const Week = React.memo(props => {
           {...dayProps}
           testID={`${testID}.day_${dayString}`}
           date={dayString}
-          state={getState(day, currXdate, props, disableDaySelection)}
+          state={context?.date === dayString ? 'selected' : getState(day, currXdate, props, disableDaySelection)}
           marking={
             disableDaySelection ? {...markedDates?.[dayString], disableTouchEvent: true} : markedDates?.[dayString]
           }
