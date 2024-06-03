@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 
 import {page} from '../dateutils';
-import {parseDate, toMarkingFormat} from '../interface';
+import {parseDate} from '../interface';
 import {DateData, Direction} from '../types';
 import styleConstructor, {HEADER_HEIGHT, KNOB_CONTAINER_HEIGHT} from './style';
 import WeekDaysNames from '../commons/WeekDaysNames';
@@ -316,7 +316,7 @@ const ExpandableCalendar = (props: ExpandableCalendarProps) => {
         }
       }
 
-      setDate?.(toMarkingFormat(d), UpdateSources.PAGE_SCROLL);
+      // setDate?.(toMarkingFormat(d), UpdateSources.PAGE_SCROLL);
     }
   }, [horizontal, isOpen, firstDay, numberOfDays, setDate, date]);
 

@@ -23,7 +23,8 @@ const WeekCalendar = props => {
     theme,
     calendarWidth,
     calendarHeight = DEFAULT_PAGE_HEIGHT,
-    testID
+    testID,
+    disableOnPageScroll = false
   } = props;
   const context = useContext(CalendarContext);
   const {date, updateSource} = context;
@@ -55,11 +56,11 @@ const WeekCalendar = props => {
   );
   const onPageChange = useCallback(
     (pageIndex, _prevPage, {scrolledByUser}) => {
-      if (scrolledByUser) {
+      if (scrolledByUser && !disableOnPageScroll) {
         context?.setDate(items[pageIndex], UpdateSources.WEEK_SCROLL);
       }
     },
-    [items]
+    [items, disableOnPageScroll]
   );
   const reloadPages = useCallback(
     pageIndex => {
