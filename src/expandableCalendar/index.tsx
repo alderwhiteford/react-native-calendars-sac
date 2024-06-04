@@ -16,7 +16,8 @@ import {
   ImageSourcePropType,
   GestureResponderEvent,
   PanResponderGestureState,
-  TouchableOpacity
+  TouchableOpacity,
+  Easing
 } from 'react-native';
 
 import {page} from '../dateutils';
@@ -381,11 +382,9 @@ const ExpandableCalendar = (props: ExpandableCalendarProps) => {
       const threshold = isOpen ? openHeight.current - closeThreshold : closedHeight + openThreshold;
       let _isOpen = _height.current >= threshold;
       const newValue = _isOpen ? openHeight.current : closedHeight;
-
       deltaY.setValue(_height.current); // set the start position for the animated value
       _height.current = toValue || newValue;
       _isOpen = _height.current >= threshold; // re-check after _height.current was set
-
       Animated.spring(deltaY, {
         toValue: _height.current,
         speed: SPEED,
@@ -393,7 +392,7 @@ const ExpandableCalendar = (props: ExpandableCalendarProps) => {
         useNativeDriver: false
       }).start(() => {
         onCalendarToggled?.(_isOpen);
-        setPosition(() => _height.current === closedHeight ? Positions.CLOSED : Positions.OPEN);
+        setPosition(() => (_height.current === closedHeight ? Positions.CLOSED : Positions.OPEN));
         closeHeader(_isOpen);
       });
       resetWeekCalendarOpacity(_isOpen);

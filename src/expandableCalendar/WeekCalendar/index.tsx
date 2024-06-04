@@ -180,19 +180,19 @@ const WeekCalendar = (props: WeekCalendarProps) => {
     const newDate = viewableItems[0]?.item;
     if (newDate !== visibleWeek.current) {
       if (constants.isAndroidRTL) {
-        //in android RTL the item we see is the one in the opposite direction
-        // const newDateOffset = -1 * (NUMBER_OF_PAGES - currItems.indexOf(newDate));
-        // const adjustedNewDate = currItems[NUMBER_OF_PAGES - newDateOffset];
-        // visibleWeek.current = adjustedNewDate;
-        // currentIndex.current = currItems.indexOf(adjustedNewDate);
-        // setDate(adjustedNewDate, UpdateSources.WEEK_SCROLL);
+        // in android RTL the item we see is the one in the opposite direction
+        const newDateOffset = -1 * (NUMBER_OF_PAGES - currItems.indexOf(newDate));
+        const adjustedNewDate = currItems[NUMBER_OF_PAGES - newDateOffset];
+        visibleWeek.current = adjustedNewDate;
+        currentIndex.current = currItems.indexOf(adjustedNewDate);
+        setDate(adjustedNewDate, UpdateSources.WEEK_SCROLL);
         if (visibleWeek.current === currItems[currItems.length - 1]) {
           onEndReached();
         }
       } else {
-        // currentIndex.current = currItems.indexOf(newDate);
-        // visibleWeek.current = newDate;
-        // setDate(newDate, UpdateSources.WEEK_SCROLL);
+        currentIndex.current = currItems.indexOf(newDate);
+        visibleWeek.current = newDate;
+        setDate(newDate, UpdateSources.WEEK_SCROLL);
         if (visibleWeek.current === currItems[0]) {
           onEndReached();
         }
