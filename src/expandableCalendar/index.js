@@ -4,7 +4,7 @@ import isNumber from 'lodash/isNumber';
 import throttle from 'lodash/throttle';
 import XDate from 'xdate';
 import React, {useContext, useRef, useState, useEffect, useCallback, useMemo} from 'react';
-import {AccessibilityInfo, PanResponder, Animated, View, Text, Image, TouchableOpacity} from 'react-native';
+import {AccessibilityInfo, PanResponder, Animated, View, Text, Image, TouchableOpacity, Easing} from 'react-native';
 import {page} from '../dateutils';
 import {parseDate} from '../interface';
 import styleConstructor, {HEADER_HEIGHT, KNOB_CONTAINER_HEIGHT} from './style';
@@ -310,18 +310,22 @@ const ExpandableCalendar = props => {
       deltaY.setValue(_height.current); // set the start position for the animated value
       _height.current = toValue || newValue;
       _isOpen = _height.current >= threshold; // re-check after _height.current was set
-      Animated.spring(deltaY, {
+
+      Animated.timing(deltaY, {
         toValue: _height.current,
-        speed: SPEED,
-        bounciness: BOUNCINESS,
+        duration: 300,
+        easing: Easing.out(Easing.quad),
         useNativeDriver: false
-      }).start();
-      onCalendarToggled?.(_isOpen);
-      setPosition(() => (_height.current === closedHeight ? Positions.CLOSED : Positions.OPEN));
+      }).start(() => {
+        onCalendarToggled?.(_isOpen);
+        setPosition(() => (_height.current === closedHeight ? Positions.CLOSED : Positions.OPEN));
+      });
+
       closeHeader(_isOpen);
       resetWeekCalendarOpacity(_isOpen);
     }
   };
+
   const resetWeekCalendarOpacity = isOpen => {
     _weekCalendarStyles.style.opacity = isOpen ? 0 : 1;
     updateNativeStyles();
