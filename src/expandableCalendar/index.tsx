@@ -17,7 +17,7 @@ import {
   GestureResponderEvent,
   PanResponderGestureState,
   TouchableOpacity,
-  Easing
+  Easing,
 } from 'react-native';
 
 import {page} from '../dateutils';
@@ -385,10 +385,10 @@ const ExpandableCalendar = (props: ExpandableCalendarProps) => {
       deltaY.setValue(_height.current); // set the start position for the animated value
       _height.current = toValue || newValue;
       _isOpen = _height.current >= threshold; // re-check after _height.current was set
-      Animated.spring(deltaY, {
+      Animated.timing(deltaY, {
         toValue: _height.current,
-        speed: SPEED,
-        bounciness: BOUNCINESS,
+        duration: 300,
+        easing: Easing.out(Easing.quad),
         useNativeDriver: false
       }).start(() => {
         onCalendarToggled?.(_isOpen);
