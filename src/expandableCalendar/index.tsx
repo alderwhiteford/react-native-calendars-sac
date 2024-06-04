@@ -214,8 +214,10 @@ const ExpandableCalendar = (props: ExpandableCalendarProps) => {
 
   const shouldHideArrows = !horizontal ? true : hideArrows || false;
 
-  const updateNativeStyles = () => {
-    wrapper?.current?.setNativeProps(_wrapperStyles.current);
+  const updateNativeStyles = (pan?: boolean) => {
+    if (!pan) {
+      wrapper?.current?.setNativeProps(_wrapperStyles.current);
+    }
 
     if (!horizontal) {
       header?.current?.setNativeProps(_headerStyles);
@@ -389,19 +391,18 @@ const ExpandableCalendar = (props: ExpandableCalendarProps) => {
         speed: SPEED,
         bounciness: BOUNCINESS,
         useNativeDriver: false
-      }).start();
-
-      onCalendarToggled?.(_isOpen);
-
-      setPosition(() => _height.current === closedHeight ? Positions.CLOSED : Positions.OPEN);
-      closeHeader(_isOpen);
+      }).start(() => {
+        onCalendarToggled?.(_isOpen);
+        setPosition(() => _height.current === closedHeight ? Positions.CLOSED : Positions.OPEN);
+        closeHeader(_isOpen);
+      });
       resetWeekCalendarOpacity(_isOpen);
     }
   };
 
   const resetWeekCalendarOpacity = (isOpen: boolean) => {
     _weekCalendarStyles.style.opacity = isOpen ? 0 : 1;
-    updateNativeStyles();
+    updateNativeStyles(true);
   };
 
   const closeHeader = (isOpen: boolean) => {
