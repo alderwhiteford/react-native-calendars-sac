@@ -1,6 +1,6 @@
 {
   "name": "react-native-calendars-sac",
-  "version": "1.22.26",
+  "version": "1.22.261",
   "main": "src/index.ts",
   "types": "src/index.d.ts",
   "description": "React Native Calendar Components",

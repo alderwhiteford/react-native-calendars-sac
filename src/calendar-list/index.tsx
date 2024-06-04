@@ -150,7 +150,7 @@ const CalendarList = (props: CalendarListProps & ContextProp, ref: any) => {
     if (current) {
       scrollToMonth(new XDate(current));
     }
-  }, [current]);
+  }, [current, scrollEnabled]);
 
   useDidUpdate(() => {
     const currMont = currentMonth?.clone();
