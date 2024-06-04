@@ -4,7 +4,7 @@ import isNumber from 'lodash/isNumber';
 import throttle from 'lodash/throttle';
 import XDate from 'xdate';
 import React, {useContext, useRef, useState, useEffect, useCallback, useMemo} from 'react';
-import {AccessibilityInfo, PanResponder, Animated, View, Text, Image, TouchableOpacity, Easing} from 'react-native';
+import {AccessibilityInfo, PanResponder, Animated, View, Text, Image, TouchableOpacity} from 'react-native';
 import {page} from '../dateutils';
 import {parseDate} from '../interface';
 import styleConstructor, {HEADER_HEIGHT, KNOB_CONTAINER_HEIGHT} from './style';
@@ -159,8 +159,10 @@ const ExpandableCalendar = props => {
   const _headerStyles = {style: {top: isOpen ? -HEADER_HEIGHT : 0}};
   const _weekCalendarStyles = {style: {opacity: isOpen ? 0 : 1}};
   const shouldHideArrows = !horizontal ? true : hideArrows || false;
-  const updateNativeStyles = () => {
-    wrapper?.current?.setNativeProps(_wrapperStyles.current);
+  const updateNativeStyles = pan => {
+    if (!pan) {
+      wrapper?.current?.setNativeProps(_wrapperStyles.current);
+    }
     if (!horizontal) {
       header?.current?.setNativeProps(_headerStyles);
     } else {
@@ -310,25 +312,22 @@ const ExpandableCalendar = props => {
       deltaY.setValue(_height.current); // set the start position for the animated value
       _height.current = toValue || newValue;
       _isOpen = _height.current >= threshold; // re-check after _height.current was set
-
-      Animated.timing(deltaY, {
+      Animated.spring(deltaY, {
         toValue: _height.current,
-        duration: 300,
-        easing: Easing.out(Easing.quad),
+        speed: SPEED,
+        bounciness: BOUNCINESS,
         useNativeDriver: false
       }).start(() => {
         onCalendarToggled?.(_isOpen);
         setPosition(() => (_height.current === closedHeight ? Positions.CLOSED : Positions.OPEN));
+        closeHeader(_isOpen);
       });
-
-      closeHeader(_isOpen);
       resetWeekCalendarOpacity(_isOpen);
     }
   };
-
   const resetWeekCalendarOpacity = isOpen => {
     _weekCalendarStyles.style.opacity = isOpen ? 0 : 1;
-    updateNativeStyles();
+    updateNativeStyles(true);
   };
   const closeHeader = isOpen => {
     headerDeltaY.current.setValue(Number(_headerStyles.style.top)); // set the start position for the animated value
